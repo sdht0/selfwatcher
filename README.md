@@ -108,6 +108,8 @@ Compile the code using `swiftc selfwatcher.swift`
 }
 ```
 
+Needs the `accessibility` permission.
+
 ## Notes
 
 - The scripts just collect daily data for now. Processing the raw inputs and visualizing them will come later.
