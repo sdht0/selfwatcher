@@ -1,6 +1,6 @@
 # Selfwatcher
 
-Tracks active window titles, keyboard inputs, mouse clicks, and scroll.
+Tracks active window titles, keyboard inputs, mouse clicks, and scrolls.
 
 Motivated by [ulogme](https://karpathy.github.io/2014/08/03/quantifying-productivity) and wanting the same ability
 to track keyboard inputs in [ActivityWatch](https://activitywatch.net/).
@@ -10,7 +10,9 @@ to track keyboard inputs in [ActivityWatch](https://activitywatch.net/).
 Every 2 seconds, the scripts detect the current window class and title and associate all key presses and mouse inputs 
 to that window. Keys are categorized (e.g., alphabets, ctrl, backspace) and mouse inputs are categorized as left clicks,
 right clicks, and scrolls. See `KEYS_ARR` for all categories. If the same window is detected, the keyboard and mouse counts
-are merged with the previous entry. Every 1 minute, the current data is written to a daily file at `~/.local/selfwatcher/YYYY/MM/YYYY-MM-dd.txt`. 
+are merged with the previous entry.
+
+Every 1 minute, the collected data is written to the file at `~/.local/selfwatcher/YYYY/MM/YYYY-MM-dd.txt`. 
 
 Sample output:
 ```
@@ -29,7 +31,7 @@ Sample output:
 
 ## How to run
 
-I'm running selfwatchers on macOS using [nix-darwin](https://github.com/nix-darwin/nix-darwin) and on NixOS running inside [UTM](https://github.com/utmapp/UTM/).
+I'm running selfwatcher on macOS using [nix-darwin](https://github.com/nix-darwin/nix-darwin) and on NixOS with Plasma 6 inside [UTM](https://github.com/utmapp/UTM/).
 
 ### NixOS
 
