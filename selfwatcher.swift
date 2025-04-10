@@ -266,7 +266,7 @@ func setupCGEventTap() {
     let eventTap = CGEvent.tapCreate(
         tap: .cgSessionEventTap,
         place: .headInsertEventTap,
-        options: .defaultTap,
+        options: .listenOnly,
         eventsOfInterest: eventMask,
         callback: { _, type, event, _ -> Unmanaged<CGEvent>? in
             switch type {
@@ -322,8 +322,16 @@ func setupCGEventTap() {
     CGEvent.tapEnable(tap: tap, enable: true)
 }
 
+func checkAccess() -> Bool {
+  let checkOptPrompt = kAXTrustedCheckOptionPrompt.takeUnretainedValue() as NSString
+  let options = [checkOptPrompt: true]
+  let accessEnabled = AXIsProcessTrustedWithOptions(options as CFDictionary?)
+  return accessEnabled
+}
+
 // MARK: - Main
 
+assert(checkAccess())
 startReporter()
 startPrinter()
 setupCGEventTap()
