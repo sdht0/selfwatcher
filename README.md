@@ -68,13 +68,13 @@ I'm running selfwatcher on macOS using [nix-darwin](https://github.com/nix-darwi
       config.myPython
     ];
 
-    systemd.services."selfwatch" = {
+    systemd.services."selfwatcher" = {
       path = config.environment.systemPackages;
       after = [ "display-manager.service" ];
       wantedBy = [ "display-manager.service" ];
       serviceConfig = {
       Type = "simple";
-      ExecStart = "${config.myPython}/bin/python /opt/projects/selfwatcher/selfwatch.py";
+      ExecStart = "${config.myPython}/bin/python /opt/projects/selfwatcher/selfwatcher.py";
       User = "myuser"; #FIXME
       Restart = "always";
       RestartSec = 10;
@@ -116,3 +116,4 @@ Needs the `accessibility` permission.
 
 - The scripts just collect daily data for now. Processing the raw inputs and visualizing them will come later.
 - The scripts are specific to my setup and will likely need some updates on other systems.
+- I also use a [Firefox extension](https://github.com/sdht0/append-hostname-to-title) to track hostnames of websites open in Firefox.
