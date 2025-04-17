@@ -19,10 +19,7 @@ from pynput import keyboard, mouse  # noqa: E402
 from pynput.keyboard import Key  # noqa: E402
 from pynput.mouse import Controller as MouseController  # noqa: E402
 
-lock = threading.Lock()
-lock2 = threading.Lock()
 mouse_controller = MouseController()
-
 display = Xlib.display.Display()
 screen = display.screen()
 
@@ -32,12 +29,12 @@ assert log_base_dir.exists(), "Log dir missing: {log_base_dir}"
 
 IDLE_TIMEOUT_SEC = 5 * 60
 POLL_INTERVAL_SEC = 2
-PRINT_INTERVAL_SEC = 1 * 60
+PRINT_INTERVAL_SEC = 59
 FILE_SEP = ";"
 UNKNOWN = "_unknown"
+IDLE = "_idle"
 
 KEYS_ARR = [
-    ("TIME", "time"),
     ("ALPHABETS", "k-az"),
     ("NUMBERS", "k-09"),
     ("SPECHARS", "k-spl"),
@@ -68,11 +65,11 @@ G_key_counts_next = INIT_COUNTS.copy()
 G_data_now = []
 G_data_next = []
 
-G_last_print_time = time.time()
 G_last_input_time = time.time()
 G_last_mouse_position = mouse_controller.position
 
-G_last_report_time = time.time()
+lock = threading.Lock()
+lock2 = threading.Lock()
 
 
 def _get_current_window_id():
@@ -292,7 +289,7 @@ def on_click(x, y, button, pressed):
 
 
 def report_loop():
-    global G_last_mouse_position, G_last_input_time, G_data_now, G_key_counts_now, G_key_counts_next, G_last_report_time
+    global G_last_mouse_position, G_last_input_time, G_data_now, G_key_counts_now, G_key_counts_next
 
     while True:
         time.sleep(POLL_INTERVAL_SEC)
@@ -303,37 +300,49 @@ def report_loop():
                 G_last_input_time = time.time()
             G_last_mouse_position = current_mouse_position
         with lock:
-            idle = (time.time() - G_last_input_time) > IDLE_TIMEOUT_SEC
+            is_idle = (time.time() - G_last_input_time) > IDLE_TIMEOUT_SEC
 
-        is_idle = ""
-        if idle:
-            is_idle = "_idle"
+        idle_str = ""
+        if is_idle:
+            idle_str = IDLE
 
         title = get_active_window_title()
-        window_title = f"{is_idle}{FILE_SEP}{title}"
+        window_title = f"{idle_str}{FILE_SEP}{title}"
 
         with lock:
             counts = G_key_counts_now
             G_key_counts_now = G_key_counts_next
 
-        counts[KEYS_INDICES["TIME"]] = int(time.time() - G_last_report_time)
+        now = datetime.now()
+        year = now.strftime("%Y")
+        month = now.strftime("%m")
+        day = now.strftime("%d")
+        date_tuple = (year, month, day)
+        time_str = now.strftime("%H:%M:%S")
 
         with lock2:
-            if len(G_data_now) == 0 or G_data_now[-1][1] != window_title:
-                time_str = datetime.now().strftime("%H:%M:%S")
-                G_data_now.append((time_str, window_title, INIT_COUNTS.copy()))
+            if len(G_data_now) == 0 or G_data_now[-1][0][1] != date_tuple or G_data_now[-1][1] != window_title:
+                G_data_now.append(([time_str, date_tuple], window_title, INIT_COUNTS.copy()))
 
+            G_data_now[-1][0][0] = time_str
             res = G_data_now[-1][2]
             for i in KEYS_INDICES.values():
                 res[i] += counts[i]
                 counts[i] = 0 #reset
 
-        G_last_report_time = time.time()
         G_key_counts_next = counts
 
 
 def print_loop():
     global G_data_now, G_data_next
+
+    now = datetime.now()
+    year = now.strftime("%Y")
+    month = now.strftime("%m")
+    day = now.strftime("%d")
+    time_str = now.strftime("%H:%M:%S")
+    writeToFile(year, month, day, [f"{time_str};_starting"])
+
     while True:
         time.sleep(PRINT_INTERVAL_SEC)
 
@@ -341,29 +350,28 @@ def print_loop():
             windows = G_data_now
             G_data_now = G_data_next
 
-        now = datetime.now()
-        year = now.strftime("%Y")
-        month = now.strftime("%m")
-        day = now.strftime("%d")
-        date_str = f"{year}-{month}-{day}"
-
-        lines = []
-        for time_str, window, counts in windows:
+        all_lines = {}
+        for metadata, window, counts in windows:
+            time_str = metadata[0]
+            date_tuple = metadata[1]
             stats = FILE_SEP.join([f"{kname}:{counts[KEYS_INDICES[key]]}" for key,kname in KEYS_ARR])
-            lines.append(f"{time_str}{FILE_SEP}{window}{FILE_SEP}{stats}")
+            all_lines.setdefault(date_tuple, list()).append(FILE_SEP.join([time_str, window, stats]))
 
-        log_dir = log_base_dir / year / month
-        log_dir.mkdir(parents=True, exist_ok=True)
-
-        log_file = log_dir / f"window-{date_str}.txt"
-        with open(log_file, "a") as f:
-            for line in lines:
-                f.write(f"{line}\n")
-                # print(l)
+        for (year, month, day), lines in all_lines.items():
+            writeToFile(year, month, day, lines)
 
         windows.clear()
         G_data_next = windows
 
+def writeToFile(year, month, day, lines):
+    log_dir = log_base_dir / year / month
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    log_file = log_dir / f"window-{year}.{month}.{day}-p{POLL_INTERVAL_SEC}.i{IDLE_TIMEOUT_SEC}.txt"
+    with open(log_file, "a") as f:
+        for line in lines:
+            f.write(f"{line}\n")
+            # print(l)
 
 reporter_thread = threading.Thread(target=report_loop, daemon=True)
 reporter_thread.start()
