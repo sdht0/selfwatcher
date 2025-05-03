@@ -12,21 +12,17 @@ to that window. Keys are categorized (e.g., alphabets, ctrl, backspace) and mous
 right clicks, and scrolls. See `KEYS_ARR` for all categories. If the same window is detected, the keyboard and mouse counts
 are merged with the previous entry.
 
-Every 1 minute, the collected data is written to the file at `~/.local/selfwatcher/YYYY/MM/YYYY-MM-dd.txt`. 
+Every 1 minute, the collected data is written to the file at `~/.local/selfwatcher/YYYY/MM/YYYY-MM-dd.p2.i300.txt`. 
 
 Sample output:
 ```
-11:34:49;;Code;● README.md - selfwatcher - Visual Studio Code;time:2;k-az:5;k-09:0;k-spl:0;k-alt:0;k-sft:0;k-ctl:0;k-del:0;k-cmd:0;k-arr:0;k-etr:0;k-spc:2;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:1;m-rc:0;m-mc:0;m-srl:0
-11:34:51;;Code;README.md - selfwatcher - Visual Studio Code;time:10;k-az:6;k-09:0;k-spl:0;k-alt:0;k-sft:0;k-ctl:2;k-del:0;k-cmd:0;k-arr:0;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:1;m-rc:0;m-mc:0;m-srl:0
-11:35:01;;yakuake;Downloads : tmux: client — Yakuake;time:20;k-az:1;k-09:0;k-spl:0;k-alt:3;k-sft:0;k-ctl:0;k-del:0;k-cmd:1;k-arr:2;k-etr:2;k-spc:0;k-tab:0;k-esc:0;k-nav:3;k-fun:0;k-oth:0;m-lc:0;m-rc:0;m-mc:0;m-srl:0
-11:35:21;;Code;README.md - selfwatcher - Visual Studio Code;time:8;k-az:3;k-09:0;k-spl:0;k-alt:0;k-sft:0;k-ctl:2;k-del:0;k-cmd:1;k-arr:1;k-etr:0;k-spc:2;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:4;m-rc:0;m-mc:0;m-srl:44
-11:35:29;;yakuake;Downloads : tmux: client — Yakuake;time:2;k-az:1;k-09:0;k-spl:0;k-alt:1;k-sft:0;k-ctl:0;k-del:0;k-cmd:1;k-arr:1;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:1;m-rc:0;m-mc:0;m-srl:0
-11:35:31;;Code;README.md - selfwatcher - Visual Studio Code;time:2;k-az:2;k-09:0;k-spl:0;k-alt:0;k-sft:0;k-ctl:0;k-del:0;k-cmd:2;k-arr:1;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:1;m-rc:0;m-mc:0;m-srl:0
-11:35:33;;yakuake;Downloads : tmux: client — Yakuake;time:2;k-az:0;k-09:0;k-spl:0;k-alt:1;k-sft:0;k-ctl:0;k-del:0;k-cmd:0;k-arr:4;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:0;m-rc:0;m-mc:0;m-srl:0
-11:35:35;;Code;README.md - selfwatcher - Visual Studio Code;time:4;k-az:1;k-09:0;k-spl:0;k-alt:0;k-sft:0;k-ctl:0;k-del:0;k-cmd:1;k-arr:0;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:1;m-rc:0;m-mc:0;m-srl:46
-11:35:39;;yakuake;Downloads : tmux: client — Yakuake;time:2;k-az:1;k-09:0;k-spl:0;k-alt:0;k-sft:0;k-ctl:0;k-del:0;k-cmd:1;k-arr:0;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:2;m-rc:0;m-mc:0;m-srl:0
-11:35:41;;Code;README.md - selfwatcher - Visual Studio Code;time:2;k-az:1;k-09:0;k-spl:0;k-alt:0;k-sft:0;k-ctl:0;k-del:0;k-cmd:0;k-arr:0;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:0;m-rc:0;m-mc:0;m-srl:0
-11:35:43;;Code;● README.md - selfwatcher - Visual Studio Code;time:6;k-az:12;k-09:0;k-spl:2;k-alt:0;k-sft:5;k-ctl:0;k-del:2;k-cmd:0;k-arr:1;k-etr:2;k-spc:1;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:0;m-rc:0;m-mc:0;m-srl:0
+_started: 2025-05-03 20:26:10
+2025-05-03 20:27:09;2025-05-03 20:27:03;;yakuake;Downloads : tmux: client — Yakuake;k-az:0;k-09:0;k-spl:0;k-alt:0;k-sft:0;k-ctl:0;k-del:0;k-cmd:0;k-arr:0;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:1;m-rc:0;m-mc:0;m-srl:0
+2025-05-03 20:27:13;2025-05-03 20:27:11;;Code;● README.md - selfwatcher - Visual Studio Code;k-az:2;k-09:0;k-spl:0;k-alt:0;k-sft:1;k-ctl:1;k-del:0;k-cmd:1;k-arr:0;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:1;m-rc:0;m-mc:0;m-srl:0
+2025-05-03 20:27:15;2025-05-03 20:27:15;;Code;README.md - selfwatcher - Visual Studio Code;k-az:2;k-09:0;k-spl:0;k-alt:0;k-sft:0;k-ctl:1;k-del:0;k-cmd:0;k-arr:0;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:0;m-rc:0;m-mc:0;m-srl:0
+2025-05-03 20:27:17;2025-05-03 20:27:17;;Code;● README.md - selfwatcher - Visual Studio Code;k-az:0;k-09:0;k-spl:1;k-alt:0;k-sft:0;k-ctl:1;k-del:0;k-cmd:0;k-arr:0;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:0;m-rc:0;m-mc:0;m-srl:0
+2025-05-03 20:27:19;2025-05-03 20:27:19;;Code;README.md - selfwatcher - Visual Studio Code;k-az:2;k-09:0;k-spl:0;k-alt:0;k-sft:0;k-ctl:1;k-del:2;k-cmd:1;k-arr:0;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:0;m-rc:0;m-mc:0;m-srl:0
+2025-05-03 20:27:21;2025-05-03 20:27:21;;yakuake;Downloads : tmux: client — Yakuake;k-az:0;k-09:0;k-spl:0;k-alt:0;k-sft:3;k-ctl:0;k-del:0;k-cmd:1;k-arr:0;k-etr:4;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:0;m-rc:0;m-mc:0;m-srl:0
 ```
 
 ## How to run
