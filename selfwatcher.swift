@@ -16,7 +16,8 @@ assert(
 let IDLE_TIMEOUT_SEC: TimeInterval = 5 * 60
 let POLL_INTERVAL_SEC: TimeInterval = 2
 let PRINT_INTERVAL_SEC: TimeInterval = 59
-let FILE_SEP = ";"
+let LINE_SEP = ";"
+let LINE_TIME_FMT = "yyyy-MM-dd HH:mm:ss"
 let UNKNOWN = "_unknown"
 let IDLE = "_idle"
 
@@ -49,8 +50,8 @@ let INIT_COUNTS = Array(repeating: 0, count: KEYS_ARR.count)
 var G_key_counts_now = INIT_COUNTS
 var G_key_counts_next = INIT_COUNTS
 
-var G_data_now = [((String, (String, String, String)), String, [Int])]()
-var G_data_next = [((String, (String, String, String)), String, [Int])]()
+var G_data_now = [((Date, Date), String, [Int])]()
+var G_data_next = [((Date, Date), String, [Int])]()
 
 var G_last_input_time = Date()
 var G_last_mouse_position = NSEvent.mouseLocation
@@ -60,7 +61,7 @@ let lock2 = NSLock()
 
 func getActiveWindowTitle() -> String {
     guard let frontmostApp = NSWorkspace.shared.frontmostApplication else {
-        return UNKNOWN + FILE_SEP + UNKNOWN
+        return UNKNOWN + LINE_SEP + UNKNOWN
     }
 
     let appName = frontmostApp.localizedName ?? UNKNOWN
@@ -78,9 +79,9 @@ func getActiveWindowTitle() -> String {
         windowTitle = title as? String ?? UNKNOWN
     }
 
-    let cleanApp = appName.replacingOccurrences(of: FILE_SEP, with: "_")
-    let cleanTitle = windowTitle.replacingOccurrences(of: FILE_SEP, with: "_")
-    return cleanApp + FILE_SEP + cleanTitle
+    let cleanApp = appName.replacingOccurrences(of: LINE_SEP, with: "_")
+    let cleanTitle = windowTitle.replacingOccurrences(of: LINE_SEP, with: "_")
+    return cleanApp + LINE_SEP + cleanTitle
 }
 
 func classifyKey(event: CGEvent) -> [Int] {
@@ -163,34 +164,23 @@ func startReporter() {
             }
 
             let title = getActiveWindowTitle()
-            let windowTitle = "\(idle_str)\(FILE_SEP)\(title)"
+            let windowTitle = "\(idle_str)\(LINE_SEP)\(title)"
 
             lock.lock()
             swap(&G_key_counts_now, &G_key_counts_next)
             lock.unlock()
 
-            let now = Date()
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy"
-            let year = dateFormatter.string(from: now)
-            dateFormatter.dateFormat = "MM"
-            let month = dateFormatter.string(from: now)
-            dateFormatter.dateFormat = "dd"
-            let day = dateFormatter.string(from: now)
-            let dateTuple = (year, month, day)
-            dateFormatter.dateFormat = "HH:mm:ss"
-            let timeStr = dateFormatter.string(from: now)
-
             lock2.lock()
             var last = G_data_now.count - 1
-            if G_data_now.count == 0 || G_data_now[last].0.1 != dateTuple
-                || G_data_now[last].1 != windowTitle
+            if G_data_now.count == 0 ||
+                G_data_now[last].1 != windowTitle ||
+                G_data_now[last].0.0.timeIntervalSince(G_data_now[last].0.1) > PRINT_INTERVAL_SEC
             {
-                G_data_now.append(((timeStr, dateTuple), windowTitle, INIT_COUNTS))
+                G_data_now.append(((Date(), Date()), windowTitle, INIT_COUNTS))
                 last += 1
             }
 
-            G_data_now[last].0.0 = timeStr
+            G_data_now[last].0.0 = Date()
             for (_, index) in KEYS_INDICES {
                 G_data_now[last].2[index] += G_key_counts_next[index]
                 G_key_counts_next[index] = 0
@@ -201,17 +191,11 @@ func startReporter() {
 }
 
 func startPrinter() {
-    let now = Date()
     let dateFormatter = DateFormatter()
-    dateFormatter.dateFormat = "yyyy"
-    let year = dateFormatter.string(from: now)
-    dateFormatter.dateFormat = "MM"
-    let month = dateFormatter.string(from: now)
-    dateFormatter.dateFormat = "dd"
-    let day = dateFormatter.string(from: now)
-    dateFormatter.dateFormat = "HH:mm:ss"
-    let timeStr = dateFormatter.string(from: now)
-    writeToFile(year: year, month: month, day: day, lines: ["\(timeStr);_started"])
+    dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+    dateFormatter.dateFormat = LINE_TIME_FMT
+
+    writeToFile(lines: ["_started: \(dateFormatter.string(from: Date()))"])
 
     DispatchQueue.global(qos: .background).async {
         while true {
@@ -221,39 +205,34 @@ func startPrinter() {
             swap(&G_data_now, &G_data_next)
             lock2.unlock()
 
-            struct DateTuple: Hashable {
-                let year: String
-                let month: String
-                let day: String
-
-                init(_ v: (String, String, String)) {
-                    self.year = v.0
-                    self.month = v.1
-                    self.day = v.2
-                }
-            }
-
-            var allLines: [DateTuple: [String]] = [:]
+            var lines: [String] = []
             for (metadata, window, counts) in G_data_next {
-                let timeStr = metadata.0
-                let dateTuple = metadata.1
+                let timeEnd = dateFormatter.string(from: metadata.0)
+                let timeBegin = dateFormatter.string(from: metadata.1)
                 let stats = KEYS_ARR.map { "\($0.1):\(counts[KEYS_INDICES[$0.0]!])" }.joined(
-                    separator: FILE_SEP)
+                    separator: LINE_SEP)
 
-                allLines[DateTuple(dateTuple), default: []].append(
-                    "\(timeStr)\(FILE_SEP)\(window)\(FILE_SEP)\(stats)")
+                lines.append([timeEnd, timeBegin, window, stats].joined(separator: LINE_SEP))
             }
+            writeToFile(lines: lines)
+
             G_data_next.removeAll()
-
-            for (dateTuple, lines) in allLines {
-                writeToFile(
-                    year: dateTuple.year, month: dateTuple.month, day: dateTuple.day, lines: lines)
-            }
         }
     }
 }
 
-func writeToFile(year: String, month: String, day: String, lines: [String]) {
+func writeToFile(lines: [String]) {
+    let now = Date()
+    let dateFormatter = DateFormatter()
+    dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+
+    dateFormatter.dateFormat = "yyyy"
+    let year = dateFormatter.string(from: now)
+    dateFormatter.dateFormat = "MM"
+    let month = dateFormatter.string(from: now)
+    dateFormatter.dateFormat = "dd"
+    let day = dateFormatter.string(from: now)
+
     let logDir = logBaseDirURL.appendingPathComponent(year)
         .appendingPathComponent(
             month)
@@ -267,7 +246,7 @@ func writeToFile(year: String, month: String, day: String, lines: [String]) {
     }
 
     let logFile = logDir.appendingPathComponent(
-        "window-\(year).\(month).\(day)-p\(POLL_INTERVAL_SEC).i\(IDLE_TIMEOUT_SEC).txt"
+        "window-\(year).\(month).\(day)-p\(Int(POLL_INTERVAL_SEC)).i\(Int(IDLE_TIMEOUT_SEC)).txt"
     )
 
     do {
