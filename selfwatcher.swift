@@ -17,7 +17,6 @@ let IDLE_TIMEOUT_SEC: TimeInterval = 5 * 60
 let POLL_INTERVAL_SEC: TimeInterval = 2
 let PRINT_INTERVAL_SEC: TimeInterval = 59
 let LINE_SEP = ";"
-let LINE_TIME_FMT = "yyyy-MM-dd HH:mm:ss"
 let UNKNOWN = "_unknown"
 let IDLE = "_idle"
 
@@ -143,6 +142,18 @@ func updateLastInput() {
     lock.unlock()
 }
 
+let timeZone = TimeZone.current
+let utcFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.timeZone = timeZone
+    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
+    return formatter
+}()
+
+func getTimestamp(now: Date) -> String {
+    return utcFormatter.string(from: now)
+}
+
 func startReporter() {
     DispatchQueue.global(qos: .background).async {
         while true {
@@ -172,15 +183,15 @@ func startReporter() {
 
             lock2.lock()
             var last = G_data_now.count - 1
-            if G_data_now.count == 0 ||
-                G_data_now[last].1 != windowTitle ||
-                G_data_now[last].0.0.timeIntervalSince(G_data_now[last].0.1) > PRINT_INTERVAL_SEC
+            let now = Date()
+            if G_data_now.count == 0 || G_data_now[last].1 != windowTitle
+                || G_data_now[last].0.0.timeIntervalSince(G_data_now[last].0.1) > PRINT_INTERVAL_SEC
             {
-                G_data_now.append(((Date(), Date()), windowTitle, INIT_COUNTS))
+                G_data_now.append(((now, now), windowTitle, INIT_COUNTS))
                 last += 1
             }
 
-            G_data_now[last].0.0 = Date()
+            G_data_now[last].0.0 = now
             for (_, index) in KEYS_INDICES {
                 G_data_now[last].2[index] += G_key_counts_next[index]
                 G_key_counts_next[index] = 0
@@ -191,11 +202,9 @@ func startReporter() {
 }
 
 func startPrinter() {
-    let dateFormatter = DateFormatter()
-    dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
-    dateFormatter.dateFormat = LINE_TIME_FMT
-
-    writeToFile(lines: ["_started: \(dateFormatter.string(from: Date()))"])
+    writeToFile(lines: [
+        "_started: TIMESTAMP: \(getTimestamp(now: Date())) | POLL_INTERVAL_SEC: \(Int(POLL_INTERVAL_SEC)) | IDLE_TIMEOUT_SEC: \(Int(IDLE_TIMEOUT_SEC)) | PRINT_INTERVAL_SEC: \(Int(PRINT_INTERVAL_SEC))"
+    ])
 
     DispatchQueue.global(qos: .background).async {
         while true {
@@ -207,12 +216,13 @@ func startPrinter() {
 
             var lines: [String] = []
             for (metadata, window, counts) in G_data_next {
-                let timeEnd = dateFormatter.string(from: metadata.0)
-                let timeBegin = dateFormatter.string(from: metadata.1)
+                let timeEnd = getTimestamp(now: metadata.0)
+                let timeDiff = String(
+                    format: "%.3f", metadata.0.timeIntervalSince(metadata.1) + POLL_INTERVAL_SEC)
                 let stats = KEYS_ARR.map { "\($0.1):\(counts[KEYS_INDICES[$0.0]!])" }.joined(
                     separator: LINE_SEP)
 
-                lines.append([timeEnd, timeBegin, window, stats].joined(separator: LINE_SEP))
+                lines.append([timeEnd, timeDiff, window, stats].joined(separator: LINE_SEP))
             }
             writeToFile(lines: lines)
 
@@ -224,7 +234,7 @@ func startPrinter() {
 func writeToFile(lines: [String]) {
     let now = Date()
     let dateFormatter = DateFormatter()
-    dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+    dateFormatter.timeZone = timeZone
 
     dateFormatter.dateFormat = "yyyy"
     let year = dateFormatter.string(from: now)
@@ -246,7 +256,7 @@ func writeToFile(lines: [String]) {
     }
 
     let logFile = logDir.appendingPathComponent(
-        "window-\(year).\(month).\(day)-p\(Int(POLL_INTERVAL_SEC)).i\(Int(IDLE_TIMEOUT_SEC)).txt"
+        "window-\(year).\(month).\(day).txt"
     )
 
     do {

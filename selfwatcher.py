@@ -31,7 +31,6 @@ IDLE_TIMEOUT_SEC = 5 * 60
 POLL_INTERVAL_SEC = 2
 PRINT_INTERVAL_SEC = 59
 LINE_SEP = ";"
-LINE_TIME_FMT = "%Y-%m-%d %H:%M:%S"
 UNKNOWN = "_unknown"
 IDLE = "_idle"
 
@@ -57,7 +56,7 @@ KEYS_ARR = [
     ("MCLICK", "m-mc"),
     ("SCROLL", "m-srl"),
 ]
-KEYS_INDICES = {k:i for i, (k,_) in enumerate(KEYS_ARR)}
+KEYS_INDICES = {k: i for i, (k, _) in enumerate(KEYS_ARR)}
 
 INIT_COUNTS = [0 for _ in KEYS_ARR]
 G_key_counts_now = INIT_COUNTS.copy()
@@ -289,6 +288,14 @@ def on_click(x, y, button, pressed):
                 G_key_counts_now[KEYS_INDICES["MCLICK"]] += 1
 
 
+def get_now():
+    return datetime.now().astimezone()
+
+
+def get_timestamp(time):
+    return time.isoformat(timespec="milliseconds")
+
+
 def report_loop():
     global G_last_mouse_position, G_last_input_time, G_data_now, G_key_counts_now, G_key_counts_next
 
@@ -297,8 +304,7 @@ def report_loop():
 
         current_mouse_position = mouse_controller.position
         if current_mouse_position != G_last_mouse_position:
-            with lock:
-                G_last_input_time = time.time()
+            update_last_input()
             G_last_mouse_position = current_mouse_position
         with lock:
             is_idle = (time.time() - G_last_input_time) > IDLE_TIMEOUT_SEC
@@ -315,18 +321,19 @@ def report_loop():
             G_key_counts_now = G_key_counts_next
 
         with lock2:
+            now = get_now()
             if (
-                len(G_data_now) == 0 or
-                G_data_now[-1][1] != window_title or
-                (G_data_now[-1][0][0] - G_data_now[-1][0][1]).total_seconds() > PRINT_INTERVAL_SEC
+                len(G_data_now) == 0
+                or G_data_now[-1][1] != window_title
+                or (G_data_now[-1][0][0] - G_data_now[-1][0][1]).total_seconds() > PRINT_INTERVAL_SEC
             ):
-                G_data_now.append(([datetime.now(timezone.utc), datetime.now(timezone.utc)], window_title, INIT_COUNTS.copy()))
+                G_data_now.append(([now, now], window_title, INIT_COUNTS.copy()))
 
-            G_data_now[-1][0][0] = datetime.now(timezone.utc)
+            G_data_now[-1][0][0] = now
             res = G_data_now[-1][2]
             for i in KEYS_INDICES.values():
                 res[i] += counts[i]
-                counts[i] = 0 #reset
+                counts[i] = 0  # reset
 
         G_key_counts_next = counts
 
@@ -334,7 +341,11 @@ def report_loop():
 def print_loop():
     global G_data_now, G_data_next
 
-    writeToFile([f"_started: {datetime.now(timezone.utc).strftime(LINE_TIME_FMT)}"])
+    writeToFile(
+        [
+            f"_started: TIMESTAMP: {get_timestamp(get_now())} | POLL_INTERVAL_SEC: {POLL_INTERVAL_SEC} | IDLE_TIMEOUT_SEC: {IDLE_TIMEOUT_SEC} | PRINT_INTERVAL_SEC: {PRINT_INTERVAL_SEC}"
+        ]
+    )
 
     while True:
         time.sleep(PRINT_INTERVAL_SEC)
@@ -345,17 +356,22 @@ def print_loop():
 
         lines = []
         for metadata, window, counts in windows:
-            time_end = metadata[0].strftime(LINE_TIME_FMT)
-            time_begin = metadata[1].strftime(LINE_TIME_FMT)
-            stats = LINE_SEP.join([f"{kname}:{counts[KEYS_INDICES[key]]}" for key,kname in KEYS_ARR])
-            lines.append(LINE_SEP.join([time_end, time_begin, window, stats]))
+            time_end = get_timestamp(metadata[0])
+            time_diff = (
+                f"{(metadata[0] - metadata[1]).total_seconds() + POLL_INTERVAL_SEC:.3f}"
+            )
+            stats = LINE_SEP.join(
+                [f"{kname}:{counts[KEYS_INDICES[key]]}" for key, kname in KEYS_ARR]
+            )
+            lines.append(LINE_SEP.join([time_end, time_diff, window, stats]))
         writeToFile(lines)
 
         windows.clear()
         G_data_next = windows
 
+
 def writeToFile(lines):
-    now = datetime.now(timezone.utc)
+    now = get_now()
     year = now.strftime("%Y")
     month = now.strftime("%m")
     day = now.strftime("%d")
@@ -363,11 +379,12 @@ def writeToFile(lines):
     log_dir = log_base_dir / year / month
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    log_file = log_dir / f"window-{year}.{month}.{day}-p{POLL_INTERVAL_SEC}.i{IDLE_TIMEOUT_SEC}.txt"
+    log_file = log_dir / f"window-{year}.{month}.{day}.txt"
     with open(log_file, "a") as f:
         for line in lines:
             f.write(f"{line}\n")
             # print(l)
+
 
 reporter_thread = threading.Thread(target=report_loop, daemon=True)
 reporter_thread.start()

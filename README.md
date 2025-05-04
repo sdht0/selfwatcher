@@ -12,17 +12,16 @@ to that window. Keys are categorized (e.g., alphabets, ctrl, backspace) and mous
 right clicks, and scrolls. See `KEYS_ARR` for all categories. If the same window is detected, the keyboard and mouse counts
 are merged with the previous entry.
 
-Every 1 minute, the collected data is written to the file at `~/.local/selfwatcher/YYYY/MM/YYYY-MM-dd.p2.i300.txt`. 
+Every 1 minute, the collected data is written to the file at `~/.local/selfwatcher/YYYY/MM/YYYY-MM-dd.txt`. 
 
 Sample output:
 ```
-_started: 2025-05-03 20:26:10
-2025-05-03 20:27:09;2025-05-03 20:27:03;;yakuake;Downloads : tmux: client — Yakuake;k-az:0;k-09:0;k-spl:0;k-alt:0;k-sft:0;k-ctl:0;k-del:0;k-cmd:0;k-arr:0;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:1;m-rc:0;m-mc:0;m-srl:0
-2025-05-03 20:27:13;2025-05-03 20:27:11;;Code;● README.md - selfwatcher - Visual Studio Code;k-az:2;k-09:0;k-spl:0;k-alt:0;k-sft:1;k-ctl:1;k-del:0;k-cmd:1;k-arr:0;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:1;m-rc:0;m-mc:0;m-srl:0
-2025-05-03 20:27:15;2025-05-03 20:27:15;;Code;README.md - selfwatcher - Visual Studio Code;k-az:2;k-09:0;k-spl:0;k-alt:0;k-sft:0;k-ctl:1;k-del:0;k-cmd:0;k-arr:0;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:0;m-rc:0;m-mc:0;m-srl:0
-2025-05-03 20:27:17;2025-05-03 20:27:17;;Code;● README.md - selfwatcher - Visual Studio Code;k-az:0;k-09:0;k-spl:1;k-alt:0;k-sft:0;k-ctl:1;k-del:0;k-cmd:0;k-arr:0;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:0;m-rc:0;m-mc:0;m-srl:0
-2025-05-03 20:27:19;2025-05-03 20:27:19;;Code;README.md - selfwatcher - Visual Studio Code;k-az:2;k-09:0;k-spl:0;k-alt:0;k-sft:0;k-ctl:1;k-del:2;k-cmd:1;k-arr:0;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:0;m-rc:0;m-mc:0;m-srl:0
-2025-05-03 20:27:21;2025-05-03 20:27:21;;yakuake;Downloads : tmux: client — Yakuake;k-az:0;k-09:0;k-spl:0;k-alt:0;k-sft:3;k-ctl:0;k-del:0;k-cmd:1;k-arr:0;k-etr:4;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:0;m-rc:0;m-mc:0;m-srl:0
+_started: TIMESTAMP: 2025-05-04T11:24:46.565-04:00 | POLL_INTERVAL_SEC: 2 | IDLE_TIMEOUT_SEC: 300 | PRINT_INTERVAL_SEC: 59
+2025-05-04T11:25:10.621-04:00;24.051;;yakuake;Downloads : tmux: client — Yakuake;k-az:1;k-09:0;k-spl:0;k-alt:2;k-sft:0;k-ctl:1;k-del:0;k-cmd:1;k-arr:5;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:0;m-rc:0;m-mc:0;m-srl:0
+2025-05-04T11:25:12.625-04:00;2.000;;Code;selfwatcher.py - scripts - nix - Visual Studio Code;k-az:1;k-09:0;k-spl:0;k-alt:0;k-sft:0;k-ctl:0;k-del:0;k-cmd:0;k-arr:0;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:0;m-rc:0;m-mc:0;m-srl:0
+2025-05-04T11:25:18.637-04:00;6.007;;yakuake;Downloads : tmux: client — Yakuake;k-az:1;k-09:0;k-spl:0;k-alt:0;k-sft:0;k-ctl:0;k-del:0;k-cmd:1;k-arr:0;k-etr:0;k-spc:0;k-tab:0;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:0;m-rc:0;m-mc:0;m-srl:0
+2025-05-04T11:25:20.640-04:00;2.000;;firefox;Get UTC Time [chatgpt.com] — Mozilla Firefox;k-az:1;k-09:0;k-spl:0;k-alt:1;k-sft:0;k-ctl:0;k-del:0;k-cmd:1;k-arr:0;k-etr:0;k-spc:0;k-tab:1;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:0;m-rc:0;m-mc:0;m-srl:0
+2025-05-04T11:25:24.645-04:00;4.003;;yakuake;Downloads : tmux: client — Yakuake;k-az:2;k-09:0;k-spl:0;k-alt:1;k-sft:1;k-ctl:1;k-del:0;k-cmd:1;k-arr:0;k-etr:0;k-spc:0;k-tab:1;k-esc:0;k-nav:0;k-fun:0;k-oth:0;m-lc:1;m-rc:0;m-mc:0;m-srl:0
 ```
 
 ## How to run
